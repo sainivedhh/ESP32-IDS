@@ -2,8 +2,8 @@
 #include <WiFi.h>
 #include <WebServer.h>
 
-const char* WIFI_SSID = "Saie";
-const char* WIFI_PASS = "sunshine";
+const char* WIFI_SSID = "wifiname";
+const char* WIFI_PASS = "password";
 
 #define LED_TCP    2
 #define LED_HTTP   4
