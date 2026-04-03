@@ -1,0 +1,10 @@
+.gemini/
+.idea/
+.vscode/
+node_modules/
+dist/
+build/
+*.log
+tmp/
+.temp/
+localStorage_backup/

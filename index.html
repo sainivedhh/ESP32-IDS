@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html class="scroll-smooth dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>DFA-IDS | Deterministic Finite Automata Intrusion Detection</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#90006a", "primary-dim": "#6a004e", "on-primary": "#ffffff",
+            "secondary": "#ff00bd", "background": "#0a0508", "surface": "#150b12",
+            "surface-container-low": "#1c0f18", "surface-container": "#24141f",
+            "surface-container-high": "#2d1a27", "surface-container-highest": "#36202f",
+            "on-background": "#f5f0f3", "on-surface": "#ede4e9", "on-surface-variant": "#b8a8b1",
+            "outline": "#8a7480", "error": "#ff3333",
+          },
+          fontFamily: { "headline": ["Plus Jakarta Sans", "sans-serif"], "body": ["Plus Jakarta Sans", "sans-serif"] },
+          borderRadius: { "DEFAULT": "1.5rem", "lg": "2rem", "xl": "3rem", "2xl": "4rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* ── Page transition ── */
+    .page-transition {
+      animation: fadeSlideIn 0.6s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── Scanline overlay ── */
+    .scanline {
+      background: linear-gradient(to bottom, transparent 50%, rgba(144, 0, 106, 0.05) 50%);
+      background-size: 100% 4px;
+      pointer-events: none;
+    }
+
+    /* ── Glitch border ── */
+    .glitch-border {
+      border: 1px solid rgba(144, 0, 106, 0.3);
+      position: relative;
+      border-radius: 2rem;
+    }
+
+    .glitch-border::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border: 1px solid rgba(255, 0, 189, 0.2);
+      pointer-events: none;
+      border-radius: 2.125rem;
+    }
+
+    /* ── Floating DFA nodes ── */
+    @keyframes floatA {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-18px) rotate(3deg);
+      }
+    }
+
+    @keyframes floatB {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-12px) rotate(-2deg);
+      }
+    }
+
+    @keyframes floatC {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-22px);
+      }
+    }
+
+    @keyframes floatD {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(-8px) scale(1.05);
+      }
+    }
+
+    .float-a {
+      animation: floatA 5s ease-in-out infinite;
+    }
+
+    .float-b {
+      animation: floatB 6.5s ease-in-out infinite;
+    }
+
+    .float-c {
+      animation: floatC 4s ease-in-out infinite;
+    }
+
+    .float-d {
+      animation: floatD 7s ease-in-out infinite;
+    }
+
+    /* ── Pulsing connection lines ── */
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -20;
+      }
+    }
+
+    .anim-dash {
+      animation: dash 1.2s linear infinite;
+    }
+
+    /* ── Particle dots ── */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(144, 0, 106, 0.6);
+      animation: particleFloat linear infinite;
+    }
+
+    @keyframes particleFloat {
+      0% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-100vh) translateX(30px);
+        opacity: 0;
+      }
+    }
+
+    /* ── Data stream ── */
+    .data-stream {
+      overflow: hidden;
+    }
+
+    .data-stream-inner {
+      display: flex;
+      gap: 2rem;
+      animation: streamScroll 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes streamScroll {
+      from {
+        transform: translateX(0)
+      }
+
+      to {
+        transform: translateX(-50%)
+      }
+    }
+
+    /* ── Counter animation ── */
+    @keyframes countUp {
+      from {
+        opacity: 0;
+        transform: scale(.7)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    .count-anim {
+      animation: countUp .6s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    /* ── Section reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Glow button ── */
+    .glow-btn {
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(144, 0, 106, 0.4);
+      transition: box-shadow .3s;
+    }
+
+    .glow-btn:hover {
+      box-shadow: 0 0 50px rgba(255, 0, 189, 0.5);
+    }
+
+    .glow-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+      opacity: 0;
+      transition: opacity .3s;
+    }
+
+    .glow-btn:hover::after {
+      opacity: 1;
+    }
+
+    /* ── Link transition ── */
+    a[data-nav] {
+      transition: opacity .2s;
+    }
+
+    a[data-nav].leaving {
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity .3s, transform .3s;
+    }
+  </style>
+</head>
+
+<body
+  class="bg-background text-on-background selection:bg-primary selection:text-white overflow-x-hidden page-transition">
+
+  <!-- Scanline -->
+  <div class="fixed inset-0 scanline z-50 pointer-events-none"></div>
+
+  <!-- Floating particles -->
+  <div id="particles" class="fixed inset-0 pointer-events-none z-0 overflow-hidden"></div>
+
+  <!-- Nav -->
+  <nav
+    class="sticky top-4 mx-8 px-8 py-4 flex justify-between items-center z-50 bg-background/80 backdrop-blur-md border border-primary/20 uppercase tracking-widest text-[10px] font-extrabold rounded-full">
+    <div class="flex items-center gap-2">
+      <div class="w-2.5 h-2.5 bg-primary animate-pulse rounded-full"></div>
+      <span class="text-xl font-extrabold text-on-background tracking-tighter">DFA-IDS</span>
+    </div>
+    <div class="hidden md:flex items-center gap-8">
+      <a class="text-on-surface-variant hover:text-secondary transition-colors" href="#mechanism">Mechanism</a>
+      <a class="text-on-surface-variant hover:text-secondary transition-colors" href="attacks.html" data-nav>Console</a>
+      <a class="text-on-surface-variant hover:text-secondary transition-colors" href="record.html"
+        data-nav>Analytics</a>
+    </div>
+    <button onclick="navigate('attacks.html')"
+      class="bg-primary text-white px-6 py-2.5 border border-secondary/50 font-bold hover:bg-primary-dim transition-all active:translate-y-0.5 rounded-full shadow-lg shadow-primary/20">
+      Enter Console
+    </button>
+  </nav>
+
+  <!-- Hero -->
+  <section class="relative min-h-[90vh] flex items-center px-8 md:px-24 pt-32 overflow-hidden">
+    <div class="max-w-4xl z-10">
+      <div
+        class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 text-secondary rounded-full text-[10px] font-extrabold tracking-[0.3em] uppercase mb-12">
+        <span class="w-1.5 h-1.5 bg-secondary rounded-full animate-ping"></span> Sai's Intrusion Detection System v4.0.2
+      </div>
+      <h1 class="text-6xl md:text-8xl font-extrabold tracking-tight text-on-background leading-[0.95] mb-8 uppercase">
+        Deterministic Finite <br /> <span class="text-primary">Automata</span> based <br /> <span
+          class="text-secondary">Intrusion.</span>
+      </h1>
+      <p
+        class="text-lg md:text-xl text-on-surface-variant max-w-2xl leading-relaxed mb-12 font-medium border-l-4 border-primary/30 pl-6">
+        Advanced monitoring environment designed to analyze network protocol behavior through mathematical rigor and
+        real-time event validation.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-8">
+        <button onclick="navigate('attacks.html')"
+          class="glow-btn bg-primary text-white px-10 py-5 font-extrabold text-lg rounded-2xl flex items-center justify-center gap-4 active:translate-y-1 shadow-xl shadow-primary/30">
+          ENTER CONSOLE <span class="material-symbols-outlined">terminal</span>
+        </button>
+        <button onclick="document.getElementById('protocols').scrollIntoView({behavior:'smooth'})"
+          class="bg-surface-container text-on-surface px-10 py-5 font-extrabold text-lg border border-outline/20 rounded-2xl flex items-center justify-center gap-4 hover:bg-surface-container-high transition-all">
+          VIEW PROTOCOLS
+        </button>
+      </div>
+    </div>
+
+    <!-- Dancing DFA diagram -->
+    <div
+      class="absolute right-4 md:right-16 top-1/2 -translate-y-1/2 w-[420px] h-[420px] hidden lg:block pointer-events-none select-none">
+      <svg viewBox="0 0 420 420" class="w-full h-full">
+        <!-- Connection lines -->
+        <line x1="90" y1="210" x2="190" y2="140" stroke="rgba(144,0,106,0.3)" stroke-width="1.5" stroke-dasharray="5,4"
+          class="anim-dash" />
+        <line x1="90" y1="210" x2="190" y2="280" stroke="rgba(144,0,106,0.3)" stroke-width="1.5" stroke-dasharray="5,4"
+          class="anim-dash" />
+        <line x1="230" y1="140" x2="330" y2="180" stroke="rgba(255,0,189,0.3)" stroke-width="1.5" stroke-dasharray="5,4"
+          class="anim-dash" />
+        <line x1="230" y1="280" x2="330" y2="240" stroke="rgba(255,0,189,0.3)" stroke-width="1.5" stroke-dasharray="5,4"
+          class="anim-dash" />
+        <!-- Halo rings -->
+        <circle cx="210" cy="210" r="180" stroke="rgba(144,0,106,0.07)" stroke-width="1" fill="none" />
+        <circle cx="210" cy="210" r="140" stroke="rgba(255,0,189,0.05)" stroke-width="1" fill="none" />
+      </svg>
+      <!-- Floating nodes -->
+      <div class="absolute left-[10px] top-1/2 -translate-y-1/2 float-a">
+        <div
+          class="w-16 h-16 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center text-primary font-black text-lg shadow-lg shadow-primary/20">
+          q0</div>
+      </div>
+      <div class="absolute left-[140px] top-[80px] float-b">
+        <div
+          class="w-14 h-14 rounded-full bg-primary/10 border border-primary/50 flex items-center justify-center text-primary/80 font-black text-sm">
+          q1</div>
+      </div>
+      <div class="absolute left-[140px] bottom-[80px] float-c">
+        <div
+          class="w-14 h-14 rounded-full bg-primary/10 border border-primary/50 flex items-center justify-center text-primary/80 font-black text-sm">
+          q2</div>
+      </div>
+      <div class="absolute right-[60px] top-[140px] float-d">
+        <div
+          class="w-16 h-16 rounded-full bg-secondary/20 border-2 border-secondary flex items-center justify-center text-secondary font-black text-base shadow-lg shadow-secondary/20">
+          q3 ✓</div>
+      </div>
+      <div class="absolute right-[50px] bottom-[130px] float-a" style="animation-delay:2s">
+        <div
+          class="w-12 h-12 rounded-full bg-error/20 border border-error/50 flex items-center justify-center text-error font-black text-xs">
+          TRAP</div>
+      </div>
+      <!-- Label -->
+      <div
+        class="absolute bottom-2 left-1/2 -translate-x-1/2 text-[9px] font-extrabold tracking-[0.25em] text-primary/40 uppercase">
+        Parallel DFA Engine</div>
+    </div>
+
+    <!-- Decorative rings -->
+    <div class="absolute right-[-10%] top-1/2 -translate-y-1/2 w-[70%] aspect-square opacity-5 pointer-events-none">
+      <div class="w-full h-full border-4 border-primary animate-[spin_60s_linear_infinite] rounded-full"></div>
+      <div
+        class="absolute inset-[10%] border-4 border-secondary/40 animate-[spin_45s_linear_infinite_reverse] rounded-full">
+      </div>
+      <div class="absolute inset-[20%] border-4 border-primary/20 animate-[spin_30s_linear_infinite] rounded-full">
+      </div>
+      <div class="absolute inset-[30%] border-t-4 border-secondary animate-pulse rounded-full"></div>
+    </div>
+  </section>
+
+  <!-- Data stream ticker -->
+  <div class="data-stream bg-primary/10 border-y border-primary/20 py-3 overflow-hidden my-8">
+    <div class="data-stream-inner text-[10px] font-extrabold tracking-[0.25em] text-primary/60 uppercase">
+      <span>TCP_SYN DETECTED</span><span class="mx-6 text-secondary">●</span>
+      <span>DFA STATE q0→q1</span><span class="mx-6 text-secondary">●</span>
+      <span>HTTP DELETE BLOCKED</span><span class="mx-6 text-secondary">●</span>
+      <span>MQTT PUBLISH FLOOD</span><span class="mx-6 text-secondary">●</span>
+      <span>INTRUSION DETECTED</span><span class="mx-6 text-secondary">●</span>
+      <span>DFA ENGINE ACTIVE</span><span class="mx-6 text-secondary">●</span>
+      <span>PARALLEL AUTOMATA RUNNING</span><span class="mx-6 text-secondary">●</span>
+      <!-- duplicate for seamless loop -->
+      <span>TCP_SYN DETECTED</span><span class="mx-6 text-secondary">●</span>
+      <span>DFA STATE q0→q1</span><span class="mx-6 text-secondary">●</span>
+      <span>HTTP DELETE BLOCKED</span><span class="mx-6 text-secondary">●</span>
+      <span>MQTT PUBLISH FLOOD</span><span class="mx-6 text-secondary">●</span>
+      <span>INTRUSION DETECTED</span><span class="mx-6 text-secondary">●</span>
+      <span>DFA ENGINE ACTIVE</span><span class="mx-6 text-secondary">●</span>
+      <span>PARALLEL AUTOMATA RUNNING</span><span class="mx-6 text-secondary">●</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <section class="py-16 px-8 md:px-24 reveal" id="stats">
+    <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div class="text-center p-8 bg-surface rounded-3xl border border-primary/10 count-anim"
+        style="animation-delay:.1s">
+        <div class="text-5xl font-black text-primary mb-2">3</div>
+        <div class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant">DFA Engines</div>
+      </div>
+      <div class="text-center p-8 bg-surface rounded-3xl border border-primary/10 count-anim"
+        style="animation-delay:.2s">
+        <div class="text-5xl font-black text-secondary mb-2">15</div>
+        <div class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant">Alphabet Symbols</div>
+      </div>
+      <div class="text-center p-8 bg-surface rounded-3xl border border-primary/10 count-anim"
+        style="animation-delay:.3s">
+        <div class="text-5xl font-black text-primary mb-2">O(1)</div>
+        <div class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant">Per Symbol</div>
+      </div>
+      <div class="text-center p-8 bg-surface rounded-3xl border border-primary/10 count-anim"
+        style="animation-delay:.4s">
+        <div class="text-5xl font-black text-secondary mb-2">RT</div>
+        <div class="text-[10px] font-extrabold uppercase tracking-widest text-on-surface-variant">Real-Time Detection
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Capabilities Bento -->
+  <section class="py-24 px-8 md:px-24 bg-surface rounded-[4rem] mx-4 md:mx-8 mb-24 mt-8 reveal">
+    <div class="max-w-7xl mx-auto">
+      <div class="mb-16 flex items-end justify-between border-b border-primary/20 pb-8">
+        <div>
+          <h2 class="text-[10px] font-extrabold text-secondary tracking-[0.5em] uppercase mb-2">Capabilities</h2>
+          <h3 class="text-4xl font-extrabold text-on-background uppercase tracking-tight">System Operations</h3>
+        </div>
+        <div class="hidden md:block text-right font-medium text-[10px] text-outline uppercase tracking-widest">
+          CORE_SYS_LATENCY: 0.002ms<br />STATUS: OPERATIONAL
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:h-[650px]">
+        <div
+          class="md:col-span-8 bg-background p-12 flex flex-col justify-between group overflow-hidden relative border border-primary/20 rounded-[3rem] hover:border-secondary/40 transition-colors duration-500">
+          <div>
+            <div
+              class="w-16 h-16 bg-primary/10 border border-primary/40 text-primary flex items-center justify-center mb-8 rounded-2xl">
+              <span class="material-symbols-outlined text-3xl"
+                style="font-variation-settings:'FILL' 1;">psychology</span>
+            </div>
+            <h3 class="text-3xl font-extrabold mb-6 uppercase tracking-tighter">Intelligent Protocol Monitoring</h3>
+            <p class="text-on-surface-variant text-lg leading-relaxed max-w-xl font-medium">Precision monitoring of
+              protocol-level communication patterns. Validating every event sequence against formal mathematical models.
+            </p>
+          </div>
+          <div class="mt-8 flex flex-wrap gap-4 font-bold text-[9px] uppercase tracking-widest">
+            <span
+              class="px-5 py-2.5 bg-surface-container text-secondary border border-secondary/30 rounded-full">RT_FEEDBACK_ACTIVE</span>
+            <span
+              class="px-5 py-2.5 bg-surface-container text-secondary border border-secondary/30 rounded-full">LOG_STREAM_LIVE</span>
+            <span
+              class="px-5 py-2.5 bg-surface-container text-secondary border border-secondary/30 rounded-full">PATTERN_RECOGNITION_ON</span>
+          </div>
+          <div
+            class="absolute right-[-80px] bottom-[-80px] opacity-[0.03] group-hover:opacity-[0.07] group-hover:scale-110 transition-all duration-1000">
+            <span class="material-symbols-outlined text-[400px]">hub</span>
+          </div>
+        </div>
+        <div
+          class="md:col-span-4 bg-primary/5 p-12 flex flex-col justify-center relative overflow-hidden rounded-[3rem] border border-primary/10 hover:border-secondary/30 transition-colors duration-500">
+          <h3 class="text-2xl font-extrabold mb-6 uppercase tracking-tight">Simulation Engine</h3>
+          <p class="text-on-surface-variant leading-relaxed mb-8 font-medium">Proactively simulate attack scenarios to
+            test the resilience of protocol implementations.</p>
+          <div class="mt-auto">
+            <div class="flex items-center gap-3 text-[10px] font-extrabold tracking-[0.3em] uppercase text-secondary">
+              <span class="w-8 h-[2px] bg-secondary rounded-full"></span> SCENARIO_MODE
+            </div>
+          </div>
+        </div>
+        <div
+          class="md:col-span-4 bg-background p-10 flex flex-col gap-6 border border-primary/20 rounded-[3rem] hover:border-primary/50 transition-colors group">
+          <span
+            class="material-symbols-outlined text-primary text-4xl group-hover:scale-110 transition-transform">rule</span>
+          <h4 class="text-xl font-extrabold uppercase tracking-tight">Validation</h4>
+          <p class="text-sm text-on-surface-variant font-medium">Strict sequence validation using DFA models to preempt
+            logical exploits.</p>
+        </div>
+        <div
+          class="md:col-span-4 bg-background p-10 flex flex-col gap-6 border border-primary/20 rounded-[3rem] hover:border-secondary/50 transition-colors group">
+          <span
+            class="material-symbols-outlined text-secondary text-4xl group-hover:scale-110 transition-transform">warning</span>
+          <h4 class="text-xl font-extrabold uppercase tracking-tight">Anomaly</h4>
+          <p class="text-sm text-on-surface-variant font-medium">Immediate identification of protocol violations and
+            abnormal traffic patterns.</p>
+        </div>
+        <div
+          class="md:col-span-4 bg-background p-10 flex flex-col gap-6 border border-primary/20 rounded-[3rem] hover:border-primary/50 transition-colors group">
+          <span
+            class="material-symbols-outlined text-primary text-4xl group-hover:scale-110 transition-transform">history</span>
+          <h4 class="text-xl font-extrabold uppercase tracking-tight">Archiving</h4>
+          <p class="text-sm text-on-surface-variant font-medium">Immutable transition history for forensic deep-dives
+            and compliance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Protocols -->
+  <section class="py-24 px-8 md:px-24 bg-background reveal" id="protocols">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+        <div class="max-w-2xl">
+          <h2 class="text-[10px] font-extrabold text-primary tracking-[0.5em] uppercase mb-4">Network Coverage</h2>
+          <h3 class="text-5xl md:text-6xl font-extrabold text-on-background uppercase tracking-tighter">Supported
+            Protocols</h3>
+        </div>
+        <div class="text-right font-bold">
+          <span class="text-8xl font-extrabold text-primary/10 tracking-tighter">03</span>
+          <p class="text-[10px] font-extrabold uppercase tracking-widest text-outline -mt-8">Active Engines</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <!-- TCP -->
+        <div class="group cursor-pointer hover:scale-[1.02] transition-transform duration-300"
+          onclick="navigate('attacks.html?protocol=TCP')">
+          <div
+            class="relative mb-8 overflow-hidden rounded-[3rem] bg-surface-container-low h-64 flex items-center justify-center border border-primary/10 group-hover:border-primary/40 transition-colors">
+            <div class="text-center">
+              <div
+                class="w-20 h-20 rounded-full border-2 border-primary/50 flex items-center justify-center mx-auto mb-4 float-a">
+                <span class="material-symbols-outlined text-primary text-4xl">lan</span>
+              </div>
+              <div class="text-[9px] font-extrabold uppercase tracking-widest text-primary/60">TCP Protocol DFA</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 mb-6 px-4">
+            <span class="material-symbols-outlined text-primary">device_hub</span>
+            <h3 class="text-2xl font-extrabold uppercase tracking-tight">TCP/IP</h3>
+          </div>
+          <ul class="space-y-4 font-bold text-[10px] uppercase tracking-widest text-on-surface-variant px-4">
+            <li class="flex items-center gap-3"><span class="w-2 h-2 bg-primary rounded-full"></span> Handshake
+              validation</li>
+            <li class="flex items-center gap-3"><span class="w-2 h-2 bg-primary rounded-full"></span> SYN flood
+              detection</li>
+            <li class="flex items-center gap-3"><span class="w-2 h-2 bg-primary rounded-full"></span> State machine
+              guard</li>
+          </ul>
+        </div>
+        <!-- HTTP -->
+        <div class="group cursor-pointer hover:scale-[1.02] transition-transform duration-300"
+          onclick="navigate('attacks.html?protocol=HTTP')">
+          <div
+            class="relative mb-8 overflow-hidden rounded-[3rem] bg-surface-container-low h-64 flex items-center justify-center border border-primary/10 group-hover:border-secondary/40 transition-colors">
+            <div class="text-center">
+              <div
+                class="w-20 h-20 rounded-full border-2 border-secondary/50 flex items-center justify-center mx-auto mb-4 float-b">
+                <span class="material-symbols-outlined text-secondary text-4xl">http</span>
+              </div>
+              <div class="text-[9px] font-extrabold uppercase tracking-widest text-secondary/60">HTTP Protocol DFA</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 mb-6 px-4">
+            <span class="material-symbols-outlined text-secondary">api</span>
+            <h3 class="text-2xl font-extrabold uppercase tracking-tight">HTTP API</h3>
+          </div>
+          <ul class="space-y-4 font-bold text-[10px] uppercase tracking-widest text-on-surface-variant px-4">
+            <li class="flex items-center gap-3"><span class="w-2 h-2 bg-secondary rounded-full"></span> API request
+              sequencing</li>
+            <li class="flex items-center gap-3"><span class="w-2 h-2 bg-secondary rounded-full"></span> Delete flood
+              detection</li>
+            <li class="flex items-center gap-3"><span class="w-2 h-2 bg-secondary rounded-full"></span> Access attempt
+              monitor</li>
+          </ul>
+        </div>
+        <!-- MQTT -->
+        <div class="group cursor-pointer hover:scale-[1.02] transition-transform duration-300"
+          onclick="navigate('attacks.html?protocol=MQTT')">
+          <div
+            class="relative mb-8 overflow-hidden rounded-[3rem] bg-surface-container-low h-64 flex items-center justify-center border border-primary/10 group-hover:border-primary/40 transition-colors">
+            <div class="text-center">
+              <div
+                class="w-20 h-20 rounded-full border-2 border-primary/50 flex items-center justify-center mx-auto mb-4 float-c">
+                <span class="material-symbols-outlined text-primary text-4xl">sensors</span>
+              </div>
+              <div class="text-[9px] font-extrabold uppercase tracking-widest text-primary/60">MQTT Protocol DFA</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 mb-6 px-4">
+            <span class="material-symbols-outlined text-primary">sensors</span>
+            <h3 class="text-2xl font-extrabold uppercase tracking-tight">MQTT IoT</h3>
+          </div>
+          <ul class="space-y-4 font-bold text-[10px] uppercase tracking-widest text-on-surface-variant px-4">
+            <li class="flex items-center gap-3"><span class="w-2 h-2 bg-primary rounded-full"></span> IoT pattern
+              observation</li>
+            <li class="flex items-center gap-3"><span class="w-2 h-2 bg-primary rounded-full"></span> Event publishing
+              audit</li>
+            <li class="flex items-center gap-3"><span class="w-2 h-2 bg-primary rounded-full"></span> Command order
+              monitor</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Detection Mechanism -->
+  <section
+    class="py-24 px-8 md:px-24 bg-surface-container-low rounded-[4rem] mx-4 md:mx-8 mb-24 border border-primary/10 reveal"
+    id="mechanism">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-20">
+        <h2 class="text-[10px] font-extrabold text-secondary tracking-[0.5em] uppercase mb-4">Classification Matrix</h2>
+        <h3 class="text-4xl font-extrabold text-on-background uppercase mb-6 tracking-tight">Detection Mechanism</h3>
+        <p class="text-on-surface-variant max-w-2xl mx-auto font-medium">Every network event is classified in real-time
+          into one of three structural categories.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div
+          class="bg-background p-10 border border-primary/20 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 rounded-[3rem] group">
+          <div class="flex items-center justify-between mb-8">
+            <span class="material-symbols-outlined text-primary text-4xl group-hover:scale-110 transition-transform"
+              style="font-variation-settings:'FILL' 1;">check_circle</span>
+            <span
+              class="text-[9px] font-extrabold uppercase tracking-widest text-primary border border-primary/30 px-4 py-2 rounded-full">SECURE</span>
+          </div>
+          <h4 class="text-xl font-extrabold mb-4 uppercase tracking-tight">Normal Behavior</h4>
+          <p class="text-on-surface-variant text-sm leading-relaxed font-medium">Traffic strictly follows predefined
+            state transitions. Logged and permitted without interruption.</p>
+        </div>
+        <div
+          class="bg-background p-10 border border-primary/20 hover:border-secondary hover:shadow-lg hover:shadow-secondary/10 transition-all duration-300 rounded-[3rem] group">
+          <div class="flex items-center justify-between mb-8">
+            <span class="material-symbols-outlined text-secondary text-4xl group-hover:scale-110 transition-transform"
+              style="font-variation-settings:'FILL' 1;">error</span>
+            <span
+              class="text-[9px] font-extrabold uppercase tracking-widest text-secondary border border-secondary/30 px-4 py-2 rounded-full">ALERT</span>
+          </div>
+          <h4 class="text-xl font-extrabold mb-4 uppercase tracking-tight">Suspicious Activity</h4>
+          <p class="text-on-surface-variant text-sm leading-relaxed font-medium">Unexpected sequences indicating
+            potential reconnaissance. Real-time logging triggered.</p>
+        </div>
+        <div
+          class="bg-background p-10 border border-primary/20 hover:border-error hover:shadow-lg hover:shadow-error/10 transition-all duration-300 rounded-[3rem] group">
+          <div class="flex items-center justify-between mb-8">
+            <span class="material-symbols-outlined text-error text-4xl group-hover:scale-110 transition-transform"
+              style="font-variation-settings:'FILL' 1;">cancel</span>
+            <span
+              class="text-[9px] font-extrabold uppercase tracking-widest text-error border border-error/30 px-4 py-2 rounded-full">TRAP_STATE</span>
+          </div>
+          <h4 class="text-xl font-extrabold mb-4 uppercase tracking-tight">Protocol Violation</h4>
+          <p class="text-on-surface-variant text-sm leading-relaxed font-medium">Hard logic failure. Communication
+            isolated into Trap States and flagged as high-risk intrusion.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Get Started -->
+  <section class="py-24 px-8 md:px-24 reveal">
+    <div
+      class="max-w-6xl mx-auto bg-primary p-12 md:p-24 text-on-primary text-center relative overflow-hidden rounded-[5rem]">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#000000_100%)] opacity-30">
+      </div>
+      <!-- Dancing orbs -->
+      <div class="absolute top-8 left-8 w-24 h-24 rounded-full bg-secondary/20 float-a pointer-events-none"></div>
+      <div class="absolute bottom-8 right-8 w-16 h-16 rounded-full bg-white/10 float-c pointer-events-none"></div>
+      <div class="absolute top-1/2 left-12 w-10 h-10 rounded-full bg-secondary/30 float-b pointer-events-none"></div>
+      <div class="relative z-10">
+        <h2 class="text-4xl md:text-6xl font-extrabold uppercase tracking-tighter mb-12">Initiate Secure Protocols</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16 max-w-4xl mx-auto">
+          <div class="flex flex-col items-center">
+            <div
+              class="w-16 h-16 border-2 border-white/50 text-white flex items-center justify-center font-extrabold mb-4 rounded-full float-a">
+              01</div>
+            <p class="text-[9px] font-extrabold uppercase tracking-[0.2em] opacity-80">ENTER ESP32 IP</p>
+          </div>
+          <div class="flex flex-col items-center">
+            <div
+              class="w-16 h-16 border-2 border-white/50 text-white flex items-center justify-center font-extrabold mb-4 rounded-full float-b">
+              02</div>
+            <p class="text-[9px] font-extrabold uppercase tracking-[0.2em] opacity-80">ESTABLISH LINK</p>
+          </div>
+          <div class="flex flex-col items-center">
+            <div
+              class="w-16 h-16 border-2 border-white/50 text-white flex items-center justify-center font-extrabold mb-4 rounded-full float-c">
+              03</div>
+            <p class="text-[9px] font-extrabold uppercase tracking-[0.2em] opacity-80">TRIGGER EVENTS</p>
+          </div>
+          <div class="flex flex-col items-center">
+            <div
+              class="w-16 h-16 border-2 border-white/50 text-white flex items-center justify-center font-extrabold mb-4 rounded-full float-d">
+              04</div>
+            <p class="text-[9px] font-extrabold uppercase tracking-[0.2em] opacity-80">ANALYZE LOGS</p>
+          </div>
+        </div>
+        <button onclick="navigate('attacks.html')"
+          class="bg-white text-primary px-14 py-7 font-extrabold text-2xl uppercase hover:bg-on-primary transition-all active:scale-95 border-b-8 border-secondary/20 rounded-[2.5rem] shadow-2xl">
+          Launch IDS Console
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer
+    class="bg-surface rounded-t-[5rem] mx-4 md:mx-8 border-t border-primary/20 py-20 px-8 text-[10px] font-bold tracking-widest uppercase mt-12">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
+      <div class="text-center md:text-left">
+        <div class="text-2xl font-extrabold text-on-background mb-4 tracking-tighter">THE SENTINEL</div>
+        <p class="text-outline font-medium">© SAI'S SENTINEL_CORE_SYS // SECURE_BY_DESIGN</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+      // ── Particles ──
+      (function () {
+        const c = document.getElementById('particles');
+        for (let i = 0; i < 18; i++) {
+          const p = document.createElement('div');
+          p.className = 'particle';
+          const s = Math.random() * 4 + 2;
+          p.style.cssText = `
+      width:${s}px; height:${s}px;
+      left:${Math.random() * 100}%;
+      bottom:${Math.random() * 20}%;
+      animation-duration:${Math.random() * 15 + 10}s;
+      animation-delay:${Math.random() * 10}s;
+      opacity:.4;
+    `;
+          c.appendChild(p);
+        }
+      })();
+
+    // ── Scroll reveal ──
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: .1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // ── Page transition navigation ──
+    function navigate(url) {
+      document.body.style.opacity = '0';
+      document.body.style.transform = 'translateY(-12px)';
+      document.body.style.transition = 'opacity .3s ease, transform .3s ease';
+      setTimeout(() => { window.location.href = url; }, 300);
+    }
+    window.navigate = navigate;
+
+    // nav links
+    document.querySelectorAll('a[data-nav]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        navigate(a.href);
+      });
+    });
+  </script>
+</body>
+
+</html>

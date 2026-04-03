@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Sai's Intrusion Detection System | Attack Records</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "rgb(var(--primary-rgb) / <alpha-value>)",
+                        "on-primary": "rgb(var(--on-primary-rgb) / <alpha-value>)",
+                        "secondary": "rgb(var(--secondary-rgb) / <alpha-value>)",
+                        "on-secondary": "rgb(var(--on-secondary-rgb) / <alpha-value>)",
+                        "tertiary": "rgb(var(--tertiary-rgb) / <alpha-value>)",
+                        "error": "rgb(var(--error-rgb) / <alpha-value>)",
+                        "on-error": "rgb(var(--on-error-rgb) / <alpha-value>)",
+                        "background": "rgb(var(--background-rgb) / <alpha-value>)",
+                        "on-background": "rgb(var(--on-background-rgb) / <alpha-value>)",
+                        "surface": "rgb(var(--surface-rgb) / <alpha-value>)",
+                        "on-surface": "rgb(var(--on-surface-rgb) / <alpha-value>)",
+                        "surface-variant": "rgb(var(--surface-variant-rgb) / <alpha-value>)",
+                        "on-surface-variant": "rgb(var(--on-surface-variant-rgb) / <alpha-value>)",
+                        "outline": "rgb(var(--outline-rgb) / <alpha-value>)",
+                        "surface-container-low": "rgb(var(--surface-container-low-rgb) / <alpha-value>)",
+                        "surface-container": "rgb(var(--surface-container-rgb) / <alpha-value>)",
+                        "surface-container-high": "rgb(var(--surface-container-high-rgb) / <alpha-value>)",
+                        "surface-container-highest": "rgb(var(--surface-container-highest-rgb) / <alpha-value>)",
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.8rem", "xl": "1.25rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        :root {
+            --primary-rgb: 144 0 106;
+            --on-primary-rgb: 255 255 255;
+            --secondary-rgb: 116 86 96;
+            --on-secondary-rgb: 255 255 255;
+            --tertiary-rgb: 53 91 144;
+            --error-rgb: 186 26 26;
+            --on-error-rgb: 255 255 255;
+            --background-rgb: 255 235 238;
+            --on-background-rgb: 64 2 30;
+            --surface-rgb: 255 235 238;
+            --on-surface-rgb: 64 2 30;
+            --surface-variant-rgb: 244 216 222;
+            --on-surface-variant-rgb: 83 67 71;
+            --outline-rgb: 133 115 119;
+            --surface-container-low-rgb: 255 230 234;
+            --surface-container-rgb: 247 218 223;
+            --surface-container-high-rgb: 239 207 212;
+            --surface-container-highest-rgb: 232 196 201;
+            --glass-rgb: 255 255 255;
+        }
+
+        .dark {
+            --primary-rgb: 255 132 205;
+            --on-primary-rgb: 94 0 68;
+            --secondary-rgb: 248 151 239;
+            --on-secondary-rgb: 98 14 98;
+            --tertiary-rgb: 138 161 255;
+            --error-rgb: 255 110 132;
+            --on-error-rgb: 73 0 19;
+            --background-rgb: 31 3 30;
+            --on-background-rgb: 255 219 246;
+            --surface-rgb: 31 3 30;
+            --on-surface-rgb: 255 219 246;
+            --surface-variant-rgb: 63 20 62;
+            --on-surface-variant-rgb: 202 157 194;
+            --outline-rgb: 145 105 139;
+            --surface-container-low-rgb: 38 5 38;
+            --surface-container-rgb: 47 10 46;
+            --surface-container-high-rgb: 55 15 54;
+            --surface-container-highest-rgb: 63 20 62;
+            --glass-rgb: 72 25 70;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(var(--glass-rgb), 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .mono-text {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body style="opacity:0;transition:opacity .4s ease,transform .4s ease;transform:translateY(16px);"
+    class="bg-surface text-on-surface min-h-screen selection:bg-primary selection:text-on-primary">
+    <!-- TopNavBar -->
+    <header
+        class="bg-surface-container-high fixed top-0 left-0 right-0 z-50 flex justify-between items-center w-full px-6 py-3 h-16 border-b border-outline/10">
+        <div class="flex-1 flex items-center">
+            <a href="index.html"
+                class="text-xl font-bold tracking-tighter text-primary font-['Space_Grotesk'] hover:opacity-80 transition-opacity">Sai's
+                IDS Records</a>
+        </div>
+        <nav class="hidden md:flex gap-6 items-center flex-none">
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-xs uppercase tracking-widest font-medium"
+                href="index.html">Home</a>
+            <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-xs uppercase tracking-widest font-medium"
+                href="attacks.html">Console</a>
+            <a class="text-primary border-b-2 border-primary font-bold text-xs uppercase tracking-widest pb-1"
+                href="record.html">Analytics</a>
+        </nav>
+        <div class="flex-1 flex items-center justify-end gap-4">
+            <div class="relative group flex items-center">
+                <input type="text" id="record-search" placeholder="Search incidents..."
+                    class="bg-surface-container border-none focus:ring-1 focus:ring-primary rounded-full px-4 py-1 text-xs w-48 transition-all focus:w-64"
+                    onkeyup="searchRecords()">
+                <span
+                    class="material-symbols-outlined text-on-surface-variant cursor-pointer p-2 hover:bg-surface-container-highest rounded-full transition-all -ml-10">search</span>
+            </div>
+            <button
+                class="material-symbols-outlined text-on-surface-variant cursor-pointer p-2 hover:bg-surface-container-highest rounded-full transition-all"
+                id="theme-toggle" title="Toggle Theme" onclick="toggleTheme()">light_mode</button>
+        </div>
+    </header>
+
+    <!-- SideNavBar -->
+    <aside
+        class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-surface-container-low border-r border-outline/10 flex flex-col pt-8 z-40">
+        <div class="px-6 mb-8 flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_#f897ef]"></div>
+            <div>
+                <p class="font-['Inter'] uppercase text-[10px] tracking-widest font-semibold text-on-surface-variant">
+                    PROTOCOLS</p>
+                <p class="text-[10px] text-on-surface-variant opacity-60">Active Surveillance</p>
+            </div>
+        </div>
+        <nav class="flex-1 space-y-1" id="record-nav">
+            <a class="flex items-center gap-3 px-4 py-3 bg-primary/10 text-primary border-l-4 border-primary font-bold font-['Inter'] uppercase text-[10px] tracking-widest cursor-pointer"
+                onclick="filterRecords('ALL')">
+                <span class="material-symbols-outlined text-sm">all_inclusive</span> ALL RECORDS
+            </a>
+            <a class="text-on-surface-variant hover:text-primary px-4 py-3 flex items-center gap-3 font-['Inter'] uppercase text-[10px] tracking-widest font-semibold hover:bg-surface-container-highest transition-all cursor-pointer"
+                onclick="filterRecords('TCP')">
+                <span class="material-symbols-outlined text-sm">lan</span> TCP/IP
+            </a>
+            <a class="text-on-surface-variant hover:text-primary px-4 py-3 flex items-center gap-3 font-['Inter'] uppercase text-[10px] tracking-widest font-semibold hover:bg-surface-container-highest transition-all cursor-pointer"
+                onclick="filterRecords('HTTP')">
+                <span class="material-symbols-outlined text-sm">language</span> HTTP/S
+            </a>
+            <a class="text-on-surface-variant hover:text-primary px-4 py-3 flex items-center gap-3 font-['Inter'] uppercase text-[10px] tracking-widest font-semibold hover:bg-surface-container-highest transition-all cursor-pointer"
+                onclick="filterRecords('MQTT')">
+                <span class="material-symbols-outlined text-sm">sensors</span> MQTT
+            </a>
+        </nav>
+        <div class="p-6 mt-auto border-t border-outline/10">
+            <button onclick="window.print()"
+                class="w-full bg-primary hover:bg-opacity-90 text-on-primary py-3 rounded-lg font-bold text-[10px] tracking-widest transition-all scale-95 active:scale-90">GENERATE
+                REPORT</button>
+        </div>
+    </aside>
+
+    <!-- Main Content Canvas -->
+    <main class="pl-64 pt-16 min-h-screen">
+        <div class="p-8 max-w-[1600px] mx-auto space-y-8">
+            <!-- Header Section -->
+            <section class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h1 class="text-4xl font-headline font-bold text-on-surface tracking-tight">Attack Records</h1>
+                    <p class="text-on-surface-variant font-body mt-1">Intrusion &amp; Protocol Violation Monitoring</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="exportAttacks()"
+                        class="px-5 py-2.5 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-all text-sm font-medium flex items-center gap-2 hover:border-primary hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">download</span> Export Records (JSON)
+                    </button>
+                    <button onclick="clearStats()"
+                        class="px-5 py-2.5 rounded-lg border border-outline-variant hover:bg-surface-container-high transition-all text-sm font-medium flex items-center gap-2 text-error">
+                        <span class="material-symbols-outlined text-[18px]">delete_sweep</span> Clear History
+                    </button>
+                    <button onclick="document.getElementById('metrics-grid').scrollIntoView({behavior: 'smooth'})"
+                        class="px-6 py-2.5 rounded-lg bg-primary text-on-primary font-bold transition-all hover:bg-primary-fixed-dim text-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">analytics</span> View Summary
+                    </button>
+                </div>
+            </section>
+
+            <!-- Metrics Bento Grid -->
+            <section id="metrics-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-error">
+                    <p class="text-[10px] font-label font-bold text-slate-400 uppercase tracking-widest mb-2">Total
+                        Attacks</p>
+                    <div class="flex items-baseline gap-3">
+                        <h3 class="text-3xl font-headline font-bold" id="stat-total-attacks">0</h3>
+                        <span class="text-error text-xs font-bold" id="stat-total-trend">+0% vs last 24h</span>
+                    </div>
+                </div>
+                <div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-primary">
+                    <p class="text-[10px] font-label font-bold text-slate-400 uppercase tracking-widest mb-2">Intrusions
+                    </p>
+                    <div class="flex items-baseline gap-3">
+                        <h3 class="text-3xl font-headline font-bold" id="stat-intrusions">0</h3>
+                        <span class="text-primary text-xs font-bold" id="stat-intrusion-perc">0% of total</span>
+                    </div>
+                </div>
+                <div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-tertiary">
+                    <p class="text-[10px] font-label font-bold text-slate-400 uppercase tracking-widest mb-2">Violations
+                    </p>
+                    <div class="flex items-baseline gap-3">
+                        <h3 class="text-3xl font-headline font-bold" id="stat-violations">0</h3>
+                        <span class="text-tertiary text-xs font-bold">Live rate</span>
+                    </div>
+                </div>
+                <div class="bg-surface-container-low p-6 rounded-xl border-l-4 border-secondary">
+                    <p class="text-[10px] font-label font-bold text-slate-400 uppercase tracking-widest mb-2">Most
+                        Frequent Protocol</p>
+                    <div class="flex items-center gap-3 mt-1">
+                        <span class="material-symbols-outlined text-secondary">memory</span>
+                        <h3 class="text-2xl font-headline font-bold" id="stat-freq-protocol">---</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Records and Sidebar Layout -->
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+                <div class="xl:col-span-8 bg-surface-container-low rounded-xl overflow-hidden flex flex-col h-[700px]">
+                    <div
+                        class="px-6 py-4 border-b border-outline/10 flex justify-between items-center bg-surface-container-high/50">
+                        <div>
+                            <h4 class="font-headline font-bold text-lg text-on-surface">Live Incident Stream</h4>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                                <span
+                                    class="text-[10px] font-bold tracking-widest uppercase text-on-surface-variant">Monitoring
+                                    Active</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-auto no-scrollbar flex-1">
+                        <table class="w-full text-left border-separate border-spacing-y-2 px-6" id="records-table">
+                            <thead class="sticky top-0 bg-surface-container-low z-10">
+                                <tr class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">
+                                    <th class="py-4 px-3">Timestamp</th>
+                                    <th class="py-4 px-3">Protocol</th>
+                                    <th class="py-4 px-3">Event Triggered</th>
+                                    <th class="py-4 px-3">DFA Path</th>
+                                    <th class="py-4 px-3">Type</th>
+                                    <th class="py-4 px-3">Severity</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm" id="records-table-body">
+                                <!-- Dynamic records will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Info Sidebar -->
+                <div class="xl:col-span-4 space-y-6">
+                    <div class="bg-surface-container-low p-6 rounded-xl border border-outline/5">
+                        <h4
+                            class="font-headline font-bold text-sm tracking-widest uppercase text-on-surface-variant mb-6 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-lg">info</span> Attack
+                            Classification
+                        </h4>
+                        <div class="space-y-4">
+                            <div class="flex gap-4 p-4 rounded-lg bg-surface-container">
+                                <div class="w-1.5 h-auto bg-primary rounded-full"></div>
+                                <div>
+                                    <p class="font-bold text-primary text-sm">Intrusion Detected</p>
+                                    <p class="text-xs text-on-surface-variant mt-1">External brute-force, SYN floods, or
+                                        scanning activity.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 p-4 rounded-lg bg-surface-container">
+                                <div class="w-1.5 h-auto bg-error rounded-full"></div>
+                                <div>
+                                    <p class="font-bold text-error text-sm">Protocol Violation</p>
+                                    <p class="text-xs text-on-surface-variant mt-1">Illegal transitions or malformed
+                                        protocol packets.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Live Status -->
+    <div class="fixed bottom-8 right-8 z-50">
+        <div
+            class="glass-panel px-4 py-2 rounded-full border border-outline-variant/50 flex items-center gap-3 shadow-2xl">
+            <span class="flex h-3 w-3 relative">
+                <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+            </span>
+            <span class="text-[10px] font-bold tracking-widest uppercase text-on-surface">Sentinel Live: Nodes
+                Linked</span>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="fixed bottom-6 right-6 translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-[60]"
+        id="toast">
+        <div
+            class="bg-primary text-on-primary px-6 py-3 rounded-full border border-on-primary/20 shadow-2xl flex items-center gap-3">
+            <span class="material-symbols-outlined text-lg">check_circle</span>
+            <span class="text-sm font-bold uppercase tracking-widest">Action Successful</span>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="recorder.js"></script>
+    <script src="analytics.js"></script>
+
+    <script>
+        window.addEventListener("load", () => {
+            document.body.style.opacity = "1";
+            document.body.style.transform = "translateY(0)";
+        });
+
+        function navigate(url) {
+            document.body.style.opacity = "0";
+            document.body.style.transform = "translateY(-12px)";
+            setTimeout(() => { window.location.href = url; }, 300);
+        }
+
+        document.querySelectorAll("a[href]").forEach(a => {
+            if (a.href.includes(".html")) {
+                a.addEventListener("click", e => {
+                    e.preventDefault();
+                    navigate(a.href);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

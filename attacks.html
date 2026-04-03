@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Sai's IDS Console</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    :root {
+      --primary-rgb: 144 0 106;
+      --on-primary-rgb: 255 255 255;
+      --primary-container-rgb: 255 216 235;
+      --on-primary-container-rgb: 61 0 44;
+      --secondary-rgb: 116 86 96;
+      --on-secondary-rgb: 255 255 255;
+      --secondary-container-rgb: 255 217 227;
+      --on-secondary-container-rgb: 43 21 29;
+      --tertiary-rgb: 125 86 53;
+      --on-tertiary-rgb: 255 255 255;
+      --tertiary-container-rgb: 255 220 194;
+      --on-tertiary-container-rgb: 46 21 0;
+      --error-rgb: 186 26 26;
+      --on-error-rgb: 255 255 255;
+      --error-container-rgb: 255 218 214;
+      --on-error-container-rgb: 65 0 2;
+      --background-rgb: 255 235 238;
+      --on-background-rgb: 64 2 30;
+      --surface-rgb: 255 235 238;
+      --on-surface-rgb: 64 2 30;
+      --surface-variant-rgb: 244 216 222;
+      --on-surface-variant-rgb: 83 67 71;
+      --outline-rgb: 133 115 119;
+      --surface-container-lowest-rgb: 255 255 255;
+      --surface-container-low-rgb: 255 230 234;
+      --surface-container-rgb: 247 218 223;
+      --surface-container-high-rgb: 239 207 212;
+      --surface-container-highest-rgb: 232 196 201;
+    }
+
+    .dark {
+      --primary-rgb: 255 174 219;
+      --on-primary-rgb: 94 0 68;
+      --primary-container-rgb: 122 0 80;
+      --on-primary-container-rgb: 255 216 235;
+      --secondary-rgb: 226 189 199;
+      --on-secondary-rgb: 66 41 50;
+      --secondary-container-rgb: 91 63 72;
+      --on-secondary-container-rgb: 255 217 227;
+      --tertiary-rgb: 239 189 148;
+      --on-tertiary-rgb: 72 41 11;
+      --tertiary-container-rgb: 98 63 32;
+      --on-tertiary-container-rgb: 255 220 194;
+      --error-rgb: 255 180 171;
+      --on-error-rgb: 105 0 5;
+      --error-container-rgb: 147 0 10;
+      --on-error-container-rgb: 255 218 214;
+      --background-rgb: 31 3 33;
+      --on-background-rgb: 235 224 225;
+      --surface-rgb: 31 3 33;
+      --on-surface-rgb: 235 224 225;
+      --surface-variant-rgb: 79 68 73;
+      --on-surface-variant-rgb: 210 194 198;
+      --outline-rgb: 155 141 145;
+      --surface-container-lowest-rgb: 12 14 18;
+      --surface-container-low-rgb: 32 22 29;
+      --surface-container-rgb: 36 26 33;
+      --surface-container-high-rgb: 46 36 43;
+      --surface-container-highest-rgb: 57 47 54;
+    }
+
+    .status-orb {
+      box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.4);
+    }
+
+    /* Custom scrollbar for high-density feel */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgb(var(--primary-rgb));
+      border-radius: 10px;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "rgb(var(--primary-rgb) / <alpha-value>)",
+            "on-primary": "rgb(var(--on-primary-rgb) / <alpha-value>)",
+            "primary-container": "rgb(var(--primary-container-rgb) / <alpha-value>)",
+            "on-primary-container": "rgb(var(--on-primary-container-rgb) / <alpha-value>)",
+            "secondary": "rgb(var(--secondary-rgb) / <alpha-value>)",
+            "on-secondary": "rgb(var(--on-secondary-rgb) / <alpha-value>)",
+            "secondary-container": "rgb(var(--secondary-container-rgb) / <alpha-value>)",
+            "on-secondary-container": "rgb(var(--on-secondary-container-rgb) / <alpha-value>)",
+            "tertiary": "rgb(var(--tertiary-rgb) / <alpha-value>)",
+            "on-tertiary": "rgb(var(--on-tertiary-rgb) / <alpha-value>)",
+            "tertiary-container": "rgb(var(--tertiary-container-rgb) / <alpha-value>)",
+            "on-tertiary-container": "rgb(var(--on-tertiary-container-rgb) / <alpha-value>)",
+            "error": "rgb(var(--error-rgb) / <alpha-value>)",
+            "on-error": "rgb(var(--on-error-rgb) / <alpha-value>)",
+            "error-container": "rgb(var(--error-container-rgb) / <alpha-value>)",
+            "on-error-container": "rgb(var(--on-error-container-rgb) / <alpha-value>)",
+            "background": "rgb(var(--background-rgb) / <alpha-value>)",
+            "on-background": "rgb(var(--on-background-rgb) / <alpha-value>)",
+            "surface": "rgb(var(--surface-rgb) / <alpha-value>)",
+            "on-surface": "rgb(var(--on-surface-rgb) / <alpha-value>)",
+            "surface-variant": "rgb(var(--surface-variant-rgb) / <alpha-value>)",
+            "on-surface-variant": "rgb(var(--on-surface-variant-rgb) / <alpha-value>)",
+            "outline": "rgb(var(--outline-rgb) / <alpha-value>)",
+            "surface-container-lowest": "rgb(var(--surface-container-lowest-rgb) / <alpha-value>)",
+            "surface-container-low": "rgb(var(--surface-container-low-rgb) / <alpha-value>)",
+            "surface-container": "rgb(var(--surface-container-rgb) / <alpha-value>)",
+            "surface-container-high": "rgb(var(--surface-container-high-rgb) / <alpha-value>)",
+            "surface-container-highest": "rgb(var(--surface-container-highest-rgb) / <alpha-value>)",
+            "inverse-surface": "rgb(53, 47, 49 / <alpha-value>)",
+            "inverse-on-surface": "rgb(249, 238, 240 / <alpha-value>)",
+            "inverse-primary": "rgb(255, 174, 219 / <alpha-value>)"
+          },
+          fontFamily: {
+            "headline": ["Space Grotesk"],
+            "body": ["Space Grotesk"],
+            "label": ["Space Grotesk"]
+          },
+          borderRadius: { "DEFAULT": "0.75rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+</head>
+
+<body
+  class="bg-background text-on-background min-h-screen flex flex-col selection:bg-primary-container selection:text-on-primary-container">
+  <!-- Alert Banner -->
+  <div id="alert-banner"
+    class="hidden bg-error text-on-error py-2 px-6 text-center font-bold text-xs uppercase tracking-[0.3em] sticky top-14 z-[45] animate-pulse">
+    ⚠ Sentinel Alert: Intrusion Sequence Detected ⚠
+  </div>
+  <header
+    class="bg-surface-container-high border-b border-outline/10 flex justify-between items-center w-full px-6 h-14 sticky top-0 z-50">
+    <div class="flex items-center gap-8">
+      <a href="index.html"
+        class="text-xl font-bold tracking-tight text-primary flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <span class="material-symbols-outlined">shield_with_heart</span>
+        Sai's IDS Console
+      </a>
+      <div class="flex items-center gap-2 bg-surface-container-highest px-3 py-1 rounded-xl border border-outline/5">
+        <span class="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest">ESP32 ADDR</span>
+        <input id="esp32-ip" class="bg-transparent border-none focus:ring-0 text-sm font-mono text-primary w-32 p-0"
+          spellcheck="false" type="text" value="10.159.179.206" />
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="flex h-2 w-2 rounded-full bg-primary animate-pulse status-orb"></span>
+        <span class="text-xs font-bold text-primary uppercase tracking-wider">Online</span>
+      </div>
+    </div>
+    <nav class="hidden md:flex gap-6 items-center">
+      <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-xs uppercase tracking-widest font-medium"
+        href="index.html">Home</a>
+      <a class="text-primary border-b-2 border-primary font-bold text-xs uppercase tracking-widest pb-1"
+        href="attacks.html">Console</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-xs uppercase tracking-widest font-medium"
+        href="record.html">Analytics</a>
+    </nav>
+    <div class="flex items-center gap-4">
+      <button
+        class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-surface-container-highest transition-colors duration-200 text-primary"
+        onclick="pingESP()">
+        <span class="material-symbols-outlined text-lg">wifi_tethering</span>
+        <span class="text-xs font-bold uppercase tracking-tighter">Ping</span>
+      </button>
+      <button
+        class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-error-container transition-colors duration-200 text-error"
+        onclick="resetAll()">
+        <span class="material-symbols-outlined text-lg">refresh</span>
+        <span class="text-xs font-bold uppercase tracking-tighter">Reset</span>
+      </button>
+      <button
+        class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-surface-container-highest transition-colors duration-200 text-on-surface-variant"
+        id="theme-toggle" onclick="toggleTheme()">
+        <span class="material-symbols-outlined text-lg">light_mode</span>
+        <span class="text-xs font-bold uppercase tracking-tighter">Theme</span>
+      </button>
+    </div>
+  </header>
+  <main class="flex-1 flex overflow-hidden">
+    <aside
+      class="hidden md:flex flex-col h-full py-4 border-r border-outline/10 bg-surface-container-low w-64 shrink-0">
+      <div class="px-6 mb-8">
+        <div class="flex items-center gap-3 p-3 bg-surface-container-highest rounded-xl border border-outline/5">
+          <div
+            class="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center border border-primary/20">
+            <span class="material-symbols-outlined">memory</span>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-primary">DFA Engine 01</p>
+            <p class="text-[10px] text-on-surface-variant font-mono">192.168.1.45</p>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 space-y-1" id="protocol-nav">
+        <a class="flex items-center gap-4 py-3 px-6 bg-primary/10 text-primary border-r-4 border-primary font-bold text-xs uppercase tracking-widest transition-all rounded-l-xl cursor-pointer"
+          onclick="switchProtocol('TCP')">
+          <span class="material-symbols-outlined text-xl">lan</span>
+          <span>TCP_IP</span>
+        </a>
+        <a class="flex items-center gap-4 py-3 px-6 text-on-surface-variant hover:bg-surface-container-highest transition-all text-xs uppercase tracking-widest font-bold rounded-l-xl mx-2 cursor-pointer"
+          onclick="switchProtocol('HTTP')">
+          <span class="material-symbols-outlined text-xl">language</span>
+          <span>HTTP/S</span>
+        </a>
+        <a class="flex items-center gap-4 py-3 px-6 text-on-surface-variant hover:bg-surface-container-highest transition-all text-xs uppercase tracking-widest font-bold rounded-l-xl mx-2 cursor-pointer"
+          onclick="switchProtocol('MQTT')">
+          <span class="material-symbols-outlined text-xl">sensors</span>
+          <span>MQTT</span>
+        </a>
+      </nav>
+    </aside>
+    <div class="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6 bg-surface">
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 lg:col-span-8 space-y-6">
+          <section
+            class="bg-surface-container p-6 rounded-xl border border-outline/10 relative overflow-hidden shadow-sm">
+            <div class="flex justify-between items-start mb-8">
+              <div>
+                <h2 class="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                  <span class="material-symbols-outlined text-lg">schema</span>
+                  Active State Engine: <span id="engine-title">TCP_CORE_V4</span>
+                </h2>
+                <p class="text-[10px] text-on-surface-variant mt-1" id="engine-desc">Real-time DFA transition monitoring
+                  for standard TCP sessions</p>
+              </div>
+              <span
+                class="px-3 py-1 bg-primary/10 text-primary text-[10px] font-extrabold uppercase tracking-tighter rounded-full border border-primary/20">Active
+                Stream</span>
+            </div>
+            <div class="flex justify-center items-center relative pt-10 pb-14 px-4 min-h-[180px]">
+              <div class="text-center">
+                <div
+                  class="font-headline font-black text-7xl md:text-8xl text-primary tracking-tighter transition-all duration-500"
+                  id="state-big">q0</div>
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant mt-2"
+                  id="state-name-label">READY_FOR_HANDSHAKE</p>
+              </div>
+              <!-- Mini Nodes -->
+              <div class="absolute bottom-2 left-0 right-0 flex justify-center gap-2 py-4" id="mini-nodes">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-8 pt-6 border-t border-outline/10">
+              <div>
+                <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Active State</p>
+                <p class="text-sm font-mono mt-1 text-on-surface uppercase tracking-tight" id="active-state-label">
+                  SYN_SENT (q3)</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Current Stream</p>
+                <p class="text-sm font-mono mt-1 text-on-surface" id="protocol-badge">TCP_IP</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Violation Count</p>
+                <p class="text-sm font-mono mt-1 text-error font-bold" id="violation-count">0</p>
+              </div>
+            </div>
+          </section>
+          <section
+            class="bg-surface-container rounded-xl border border-outline/10 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 bg-surface-container-high flex justify-between items-center border-b border-outline/10">
+              <h2 class="text-xs font-bold uppercase tracking-widest text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg text-primary">security</span>
+                Security Records (Attack Recorder)
+              </h2>
+              <div class="flex gap-2">
+                <button
+                  class="px-3 py-1 bg-surface-container-highest text-on-surface-variant border border-outline/10 rounded-lg text-[10px] font-bold uppercase tracking-tighter hover:text-primary transition-all"
+                  onclick="viewSummary()">Summary</button>
+                <button
+                  class="px-3 py-1 bg-surface-container-highest text-on-surface-variant border border-outline/10 rounded-lg text-[10px] font-bold uppercase tracking-tighter hover:text-primary transition-all"
+                  onclick="exportAttacks()">Export JSON</button>
+                <button
+                  class="px-3 py-1 bg-error-container text-error border border-error/10 rounded-lg text-[10px] font-bold uppercase tracking-tighter hover:brightness-95 transition-all"
+                  onclick="clearAttacks()">Clear</button>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="bg-surface-container-low border-b border-outline/10">
+                    <th class="px-4 py-2 font-bold uppercase tracking-tighter text-on-surface-variant">Timestamp</th>
+                    <th class="px-4 py-2 font-bold uppercase tracking-tighter text-on-surface-variant">Event</th>
+                    <th class="px-4 py-2 font-bold uppercase tracking-tighter text-on-surface-variant">Protocol</th>
+                    <th class="px-4 py-2 font-bold uppercase tracking-tighter text-on-surface-variant">Severity</th>
+                    <th class="px-4 py-2 font-bold uppercase tracking-tighter text-on-surface-variant text-right">Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-outline/5 font-mono" id="records-table-body">
+                  <!-- Dynamic records will be injected here -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+        <div class="col-span-12 lg:col-span-4 space-y-6">
+          <div class="bg-primary-container border border-primary/20 p-5 rounded-xl relative overflow-hidden shadow-sm">
+            <div class="absolute -right-4 -top-4 opacity-10 rotate-12">
+              <span class="material-symbols-outlined text-7xl text-primary">security</span>
+            </div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Threat Mitigation Level</p>
+            <h3 class="text-3xl font-extrabold text-on-primary-container tracking-tight mb-1">Level 0: Minimal</h3>
+            <p class="text-[11px] text-on-primary-container/70 mb-4">No active compromises detected in last 24h</p>
+            <button
+              class="w-full py-2 bg-primary text-on-primary rounded-xl font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-md"
+              onclick="viewSummary()">View Full Summary</button>
+          </div>
+          <div class="bg-surface-container-highest p-5 rounded-xl border border-outline/10 space-y-4 shadow-sm"
+            id="sim-panel">
+            <div class="flex items-center justify-between">
+              <p class="text-[10px] font-bold uppercase tracking-widest text-primary" id="sim-title">Protocol Control
+              </p>
+              <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            </div>
+            <div class="space-y-4" id="sim-categories">
+              <!-- Categorized buttons injected by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12">
+          <section
+            class="bg-surface-container-lowest rounded-xl border border-outline/10 shadow-lg overflow-hidden flex flex-col">
+            <div
+              class="px-4 py-2 bg-surface-container-highest flex justify-between items-center border-b border-outline/10">
+              <div class="flex items-center gap-2">
+                <span class="flex gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-error border border-error/20"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-primary-container border border-primary/20"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-primary border border-primary/20"></span>
+                </span>
+                <span
+                  class="text-[10px] font-mono text-on-surface-variant/70 ml-4 font-bold uppercase tracking-widest">System
+                  Terminal - tty0</span>
+              </div>
+              <div class="flex items-center gap-4 text-[10px] font-mono text-on-surface-variant/50">
+                <span>Encoding: UTF-8</span>
+                <span>115200 Baud</span>
+              </div>
+            </div>
+            <div id="terminal-output"
+              class="p-4 font-mono text-xs text-on-surface leading-relaxed max-h-48 overflow-y-auto bg-surface-container-low">
+              <p class="text-primary font-medium">[04:35:37] Sentinel UI core services: ONLINE</p>
+              <p class="text-primary font-medium">[04:35:38] Initializing TLS stack... DONE</p>
+              <p class="text-primary font-medium">[04:35:38] Binding to socket :192.168.1.100... SUCCESS</p>
+              <p class="text-on-surface-variant">[04:35:40] MQTT client connection keepalive sent</p>
+              <p class="text-on-surface-variant">[04:36:12] DFA state transition: q0 -&gt; q1 [EVENT: PORT_SCAN]</p>
+              <p class="text-error font-bold">[04:36:12] ALERT: Possible port scan detected from 192.168.1.15</p>
+              <p class="text-primary font-medium">[04:37:01] Garbage Collection task: 24KB freed</p>
+              <p class="text-on-surface-variant">[04:38:00] CPU Load stable at 24.2%</p>
+              <div class="mt-2 flex">
+                <span class="text-primary mr-2 font-bold">admin@sentinel:~#</span>
+                <span class="w-2 h-4 bg-primary animate-pulse rounded-sm"></span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div class="fixed bottom-6 right-6 translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-[60]"
+    id="toast">
+    <div
+      class="bg-primary text-on-primary px-6 py-3 rounded-full border border-on-primary/20 shadow-2xl flex items-center gap-3">
+      <span class="material-symbols-outlined">check_circle</span>
+      <span class="text-sm font-bold uppercase tracking-widest">Command Executed Successfully</span>
+    </div>
+  </div>
+  <script src="api.js"></script>
+  <script src="recorder.js"></script>
+  <script src="main.js"></script>
+  <script>
+    window.addEventListener("load", () => {
+      document.body.style.opacity = "1";
+      document.body.style.transform = "translateY(0)";
+    });
+    function navigate(url) {
+      document.body.style.opacity = "0";
+      document.body.style.transform = "translateY(-12px)";
+      setTimeout(() => { window.location.href = url; }, 300);
+    }
+    window.navigate = navigate;
+    document.querySelectorAll("a[href]").forEach(a => {
+      if (a.href.includes(".html")) {
+        a.addEventListener("click", e => { e.preventDefault(); navigate(a.href); });
+      }
+    });
+  </script>
+</body>
+
+</html>
